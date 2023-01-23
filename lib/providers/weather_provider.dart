@@ -5,8 +5,8 @@ class WeatherProvider extends ChangeNotifier {
   WeatherModel? _weatherData;
   String? cityName;
 
-  set weatherData(WeatherModel? weather) {
-    weatherData = weather;
+  set weatherData(WeatherModel? data) {
+    _weatherData = data;
     notifyListeners();
   }
 

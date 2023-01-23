@@ -6,7 +6,11 @@ import 'package:weather_app/providers/weather_provider.dart';
 import 'package:weather_app/screens/home_page.dart';
 
 void main() {
-  runApp(WeatherApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) {
+        return WeatherProvider();
+      },
+      child: WeatherApp()));
 }
 
 class WeatherApp extends StatelessWidget {
@@ -24,7 +28,15 @@ class WeatherApp extends StatelessWidget {
       },
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomePage(),
+        theme: ThemeData(
+          primarySwatch:
+              Provider.of<WeatherProvider>(context).weatherData == null
+                  ? Colors.blue
+                  : Provider.of<WeatherProvider>(context)
+                      .weatherData!
+                      .getThemeColor(),
+        ),
+        home: const HomePage(),
       ),
     );
   }

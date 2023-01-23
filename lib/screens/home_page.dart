@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:weather_app/providers/weather_provider.dart';
 import '../models/weather_model.dart';
 import './search_page.dart';
+import 'package:weather_app/main.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -23,7 +24,12 @@ class _HomePageState extends State<HomePage> {
     weatherData = Provider.of<WeatherProvider>(context).weatherData;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor:
+            Provider.of<WeatherProvider>(context).weatherData == null
+                ? Colors.blue
+                : Provider.of<WeatherProvider>(context)
+                    .weatherData!
+                    .getThemeColor(),
         actions: [
           IconButton(
               onPressed: () {
@@ -54,7 +60,16 @@ class _HomePageState extends State<HomePage> {
               ),
             )
           : Container(
-              color: Colors.orange,
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                colors: [
+                  weatherData!.getThemeColor(),
+                  weatherData!.getThemeColor()[300]!,
+                  weatherData!.getThemeColor()[100]!,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -62,15 +77,15 @@ class _HomePageState extends State<HomePage> {
                     flex: 3,
                   ),
                   Text(
-                    Provider.of<WeatherProvider>(context).cityName ?? 'Cairo',
+                    Provider.of<WeatherProvider>(context).cityName ?? 'London',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    'updated: 12-8-2023',
-                    style: TextStyle(
+                  Text(
+                    'updated at: ${Provider.of<WeatherProvider>(context).weatherData?.date.toString()}',
+                    style: const TextStyle(
                       fontSize: 16,
                     ),
                   ),
@@ -80,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Image.asset('assets/images/clear.png'),
+                      Image.asset(weatherData!.getImage()),
                       Text(
                         weatherData?.temp.toInt().toString() ?? '30',
                         style: const TextStyle(
