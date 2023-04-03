@@ -1,131 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:weather_app/providers/weather_provider.dart';
-import '../models/weather_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_app/cubits/weather_cubit.dart';
+import 'package:weather_app/cubits/weather_cubit/weather_state.dart';
+
 import './search_page.dart';
-import 'package:weather_app/main.dart';
+import '../models/weather_model.dart';
+import '../widgets/default_widget.dart';
+import '../widgets/failure_widget.dart';
+import '../widgets/success_widget.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends StatelessWidget {
+  WeatherModel? weatherModel;
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  WeatherModel? weatherData;
-
-  void updateUi() {
-    setState(() {});
-  }
+  HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    weatherData = Provider.of<WeatherProvider>(context).weatherData;
+    weatherModel = BlocProvider.of<WeatherCubit>(context).weatherModel;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:
-            Provider.of<WeatherProvider>(context).weatherData == null
-                ? Colors.blue
-                : Provider.of<WeatherProvider>(context)
-                    .weatherData!
-                    .getThemeColor(),
+        backgroundColor: BlocProvider.of<WeatherCubit>(context).weatherModel == null
+            ? Colors.blue
+            : BlocProvider.of<WeatherCubit>(context).weatherModel!.getThemeColor(),
         actions: [
           IconButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return SearchPage(
-                    updateUi: updateUi,
-                  );
+                  return SearchPage();
                 }));
               },
               icon: const Icon(Icons.search))
         ],
         title: const Text('Home Page'),
       ),
-      body: weatherData == null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'There is no weather 😞 start',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                  Text(
-                    'searching now 🔍',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                ],
-              ),
-            )
-          : Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                colors: [
-                  weatherData!.getThemeColor(),
-                  weatherData!.getThemeColor()[300]!,
-                  weatherData!.getThemeColor()[100]!,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(
-                    flex: 3,
-                  ),
-                  Text(
-                    Provider.of<WeatherProvider>(context).cityName ?? 'London',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'updated at: ${Provider.of<WeatherProvider>(context).weatherData?.date.toString()}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  const Spacer(
-                    flex: 1,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Image.asset(weatherData!.getImage()),
-                      Text(
-                        weatherData?.temp.toInt().toString() ?? '30',
-                        style: const TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          Text('minTemp: ${weatherData?.minTemp.toInt()}'),
-                          Text('maxTemp: ${weatherData?.maxTemp.toInt()}')
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Spacer(
-                    flex: 1,
-                  ),
-                  Text(
-                    weatherData?.weatherState ?? 'Clear',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(
-                    flex: 6,
-                  ),
-                ],
-              ),
-            ),
+      body: BlocBuilder<WeatherCubit, WeatherState>(builder: (context, state) {
+        if (state is WeatherLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is WeatherSuccess) {
+          return SuccessWidget(weatherData: state.weatherModel);
+        } else if (state is WeatherFailure) {
+          return const FailureWidget();
+        } else {
+          return const DefaultWidget();
+        }
+      }),
     );
   }
 }

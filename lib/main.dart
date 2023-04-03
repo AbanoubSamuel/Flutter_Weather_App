@@ -1,43 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wakelock/wakelock.dart';
-import 'package:weather_app/models/weather_model.dart';
-import 'package:weather_app/providers/weather_provider.dart';
+import 'package:weather_app/cubits/weather_cubit.dart';
 import 'package:weather_app/screens/home_page.dart';
+import 'package:weather_app/services/weather_service.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
+  runApp(BlocProvider(
       create: (context) {
-        return WeatherProvider();
+        return WeatherCubit(WeatherService());
       },
-      child: WeatherApp()));
+      child: const WeatherApp()));
 }
 
 class WeatherApp extends StatelessWidget {
-  WeatherApp({super.key});
-
-  late WeatherModel weather;
+  const WeatherApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     Wakelock.toggle(enable: true);
-    return ChangeNotifierProvider(
-      create: (BuildContext context) {
-        return WeatherProvider();
-      },
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch:
-              Provider.of<WeatherProvider>(context).weatherData == null
-                  ? Colors.blue
-                  : Provider.of<WeatherProvider>(context)
-                      .weatherData!
-                      .getThemeColor(),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: BlocProvider.of<WeatherCubit>(context).weatherModel == null
+              ? Colors.blue
+              : BlocProvider.of<WeatherCubit>(context).weatherModel!.getThemeColor(),
         ),
-        home: const HomePage(),
+        primaryColor: BlocProvider.of<WeatherCubit>(context).weatherModel == null
+            ? Colors.blue
+            : BlocProvider.of<WeatherCubit>(context).weatherModel!.getThemeColor(),
+        primarySwatch: BlocProvider.of<WeatherCubit>(context).weatherModel == null
+            ? Colors.blue
+            : BlocProvider.of<WeatherCubit>(context).weatherModel!.getThemeColor(),
       ),
+      home: HomePage(),
     );
   }
 }
